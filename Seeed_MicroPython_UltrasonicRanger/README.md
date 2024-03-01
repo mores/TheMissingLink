@@ -11,3 +11,6 @@ This Grove - ultrasonic sensor is a non-contact distance measurement module whic
 - Python https://github.com/Seeed-Studio/grove.py/blob/master/grove/grove_ultrasonic_ranger.py
 
 ### Usage:
+
+1. Upload grove_ultrasonic_ranger.py to your RP2040 board
+2. Run ultrasonic_display_on_terminal.py from the examples directory

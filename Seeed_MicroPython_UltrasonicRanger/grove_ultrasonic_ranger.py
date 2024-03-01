@@ -2,6 +2,8 @@
 A library for grove ultrasonic ranger written for microPython
 
 Ported from: https://github.com/Seeed-Studio/Seeed_Arduino_UltrasonicRanger/blob/master/Ultrasonic.cpp
+
+Source location: https://raw.githubusercontent.com/mores/TheMissingLink/main/Seeed_MicroPython_UltrasonicRanger/grove_ultrasonic_ranger.py
 """
 import machine
 import time
