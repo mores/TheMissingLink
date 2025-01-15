@@ -17,7 +17,7 @@ class GroveUltrasonicRanger:
     
     def duration(self):
         
-        pin = machine.Pin(1, machine.Pin.OUT)
+        pin = machine.Pin(self._pin, machine.Pin.OUT)
         pin.value(0)
         time.sleep_us(2)
         pin.value(1)
