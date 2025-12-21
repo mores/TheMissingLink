@@ -1,3 +1,6 @@
+https://pixelcontroller.com/store/featured/99-falcon-picap-v2.html
+
+
 1. fresh install Raspberry Pi OS (64-bit) trixie
 
 2. git clone https://github.com/mores/TheMissingLink.git
