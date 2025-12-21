@@ -44,8 +44,12 @@ public class HelloJNI {
         ColorBufferWriter.writeRgb888( buffer, java.awt.Color.RED.getRGB() );
         me.displayIt();
 
-        me.sayGoodBye();
+        try {
+            Thread.sleep( 5000 );
+        } catch ( Exception e ) {
+        }
 
+        me.sayGoodBye();
     }
 
     private static void fillBufferWithPattern( ByteBuffer targetBuffer, byte b1, byte b2, byte b3, byte b4, byte b5, byte b6, byte b7, byte b8, byte b9) {

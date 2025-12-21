@@ -7,6 +7,6 @@ fi
 
 javac -h . HelloJNI.java
 
-gcc -Wall -g -I"${JAVA_HOME}/include" -I"${JAVA_HOME}/include/linux" -I/usr/include/libdrm -shared -fPIC -o libhello.so HelloJNI.c -ldrm
+gcc -Wall -g -I"${JAVA_HOME}/include" -I"${JAVA_HOME}/include/linux" -I/usr/include/libdrm -shared -fPIC -o libhello.so HelloJNI.c -ldrm -lbcm2835
 
-java -Djava.library.path=. HelloJNI
+java --enable-native-access=ALL-UNNAMED -Djava.library.path=. HelloJNI

@@ -13,6 +13,7 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 
+#include <bcm2835.h>
 
 uint32_t connector_id;
 uint32_t crtc_id;
@@ -51,6 +52,19 @@ JNIEXPORT void JNICALL Java_HelloJNI_sayGoodBye(JNIEnv *env, jobject thisObject)
 // Implementation of the native method
 JNIEXPORT void JNICALL Java_HelloJNI_sayHello(JNIEnv *env, jobject thisObject) {
     printf("Hello from C!\n");
+
+    if (bcm2835_init()) {
+        // configure pins for DPI                               Position in RGB888
+        bcm2835_gpio_fsel(5, BCM2835_GPIO_FSEL_ALT2); // DPI_D1 0x020000
+        bcm2835_gpio_fsel(6, BCM2835_GPIO_FSEL_ALT2); // DPI_D2 0x040000
+        bcm2835_gpio_fsel(13, BCM2835_GPIO_FSEL_ALT2); // DPI_D9 0x000200
+        bcm2835_gpio_fsel(26, BCM2835_GPIO_FSEL_ALT2); // DPI_D22 0x000040
+
+        bcm2835_close();
+    }
+    else {
+        printf("BCM2835 Library initialization failed!\n");
+    }
 
     fd = open("/dev/dri/card0", O_RDWR | O_CLOEXEC);
     if (fd < 0) {

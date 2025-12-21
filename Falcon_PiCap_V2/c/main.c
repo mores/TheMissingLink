@@ -35,7 +35,7 @@ int main() {
         fb_ptr[i + 3] = 0xFF;
         fb_ptr[i + 4] = 0xFF;
         fb_ptr[i + 5] = 0xFF;
-        fb_ptr[i + 6] = 0x02;
+        fb_ptr[i + 6] = 0x06;
         fb_ptr[i + 7] = 0x00;
         fb_ptr[i + 8] = 0x00;
     }
@@ -49,7 +49,7 @@ int main() {
         fb_ptr[i + 3] = 0xFF;
         fb_ptr[i + 4] = 0xFF;
         fb_ptr[i + 5] = 0xFF;
-        fb_ptr[i + 6] = 0x02;
+        fb_ptr[i + 6] = 0x06;
         fb_ptr[i + 7] = 0x00;
         fb_ptr[i + 8] = 0x00;
     }
@@ -63,7 +63,7 @@ int main() {
         fb_ptr[i + 3] = 0xFF;
         fb_ptr[i + 4] = 0xFF;
         fb_ptr[i + 5] = 0xFF;
-        fb_ptr[i + 6] = 0x02;
+        fb_ptr[i + 6] = 0x06;
         fb_ptr[i + 7] = 0x00;
         fb_ptr[i + 8] = 0x00;
     }
@@ -79,7 +79,7 @@ int main() {
         fb_ptr[i + 3] = 0xFF;
         fb_ptr[i + 4] = 0xFF;
         fb_ptr[i + 5] = 0xFF;
-        fb_ptr[i + 6] = 0x02;
+        fb_ptr[i + 6] = 0x06;
         fb_ptr[i + 7] = 0x00;
         fb_ptr[i + 8] = 0x00;
     }
@@ -94,7 +94,7 @@ int main() {
         fb_ptr[i + 3] = 0xFF;
         fb_ptr[i + 4] = 0xFF;
         fb_ptr[i + 5] = 0xFF;
-        fb_ptr[i + 6] = 0x02;
+        fb_ptr[i + 6] = 0x06;
         fb_ptr[i + 7] = 0x00;
         fb_ptr[i + 8] = 0x00;
     }
@@ -109,7 +109,7 @@ int main() {
 
         if ((i + 1) % 216 == 0)
         {
-            printf("- - %d - \n", i);
+            printf("- - %ld - \n", i);
         }
     }
     printf("\n");

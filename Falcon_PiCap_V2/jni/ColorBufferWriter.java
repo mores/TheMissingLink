@@ -36,7 +36,7 @@ public class ColorBufferWriter {
 
             // Byte 6: bottom-up ordering
             buffer.put(unit >= (UNITS_PER_CHANNEL - activeUnits)
-                    ? (byte) 0x02
+                    ? (byte) 0x06
                     : (byte) 0x00);
 
             // Bytes 7–8: always 0
