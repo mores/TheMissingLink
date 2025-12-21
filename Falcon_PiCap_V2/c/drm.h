@@ -9,6 +9,12 @@ void destroy();
 
 int displayIt();
 
+void disableDisplay();
+
+void enableDisplay();
+
 uint8_t* init();
+
+void off();
 
 #endif // FUNCTIONS_H

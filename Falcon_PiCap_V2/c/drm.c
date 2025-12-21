@@ -26,33 +26,55 @@ uint64_t bufferSize() {
 }
 
 void destroy() {
+
+    off();
+    displayIt();
+
+    // sleep time picked by trial and error
+    usleep(30000);
+    disableDisplay();
+
     munmap(fb_ptr, size);
     drmModeRmFB(fd, fb);
 
     close(fd);
+
+    bcm2835_close();
 }
 
 int displayIt() {
-	if (drmModeSetCrtc(fd, crtc_id, fb, 0, 0, &connector_id, 1, &mode) != 0) {
+
+    if (drmModeSetCrtc(fd, crtc_id, fb, 0, 0, &connector_id, 1, &mode) != 0) {
         perror("drmModeSetCrtc failed");
         return 1;
     }
 
-	return 0;
+    return 0;
+}
+
+void disableDisplay() {
+
+    // configure pins for input
+    bcm2835_gpio_fsel(5, BCM2835_GPIO_FSEL_INPT);
+    bcm2835_gpio_fsel(6, BCM2835_GPIO_FSEL_INPT);
+    bcm2835_gpio_fsel(13, BCM2835_GPIO_FSEL_INPT);
+    bcm2835_gpio_fsel(26, BCM2835_GPIO_FSEL_INPT);
+
+}
+
+void enableDisplay() {
+
+    // configure pins for DPI                               Position in RGB888
+    bcm2835_gpio_fsel(5, BCM2835_GPIO_FSEL_ALT2); // DPI_D1 0x020000
+    bcm2835_gpio_fsel(6, BCM2835_GPIO_FSEL_ALT2); // DPI_D2 0x040000
+    bcm2835_gpio_fsel(13, BCM2835_GPIO_FSEL_ALT2); // DPI_D9 0x000200
+    bcm2835_gpio_fsel(26, BCM2835_GPIO_FSEL_ALT2); // DPI_D22 0x000040
+
 }
 
 uint8_t* init() {
 
-    if (bcm2835_init()) {
-        // configure pins for DPI                               Position in RGB888
-        bcm2835_gpio_fsel(5, BCM2835_GPIO_FSEL_ALT2); // DPI_D1 0x020000
-        bcm2835_gpio_fsel(6, BCM2835_GPIO_FSEL_ALT2); // DPI_D2 0x040000
-        bcm2835_gpio_fsel(13, BCM2835_GPIO_FSEL_ALT2); // DPI_D9 0x000200
-        bcm2835_gpio_fsel(26, BCM2835_GPIO_FSEL_ALT2); // DPI_D22 0x000040
-
-        bcm2835_close();
-    }
-    else {
+    if ( ! bcm2835_init()) {
         printf("BCM2835 Library initialization failed!\n");
     }
 
@@ -118,7 +140,7 @@ uint8_t* init() {
         return NULL;
     }
 
-	fb_ptr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, map.offset);
+    fb_ptr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, map.offset);
     if (fb_ptr == MAP_FAILED) {
         perror("mmap");
         return NULL;
@@ -131,5 +153,24 @@ uint8_t* init() {
         return NULL;
     }
 
+    off();
+    displayIt();
+    enableDisplay();
+
     return fb_ptr;
+}
+
+void off() {
+
+    for (uint64_t i = 0; i < size; i += 9) {
+        fb_ptr[i + 0] = 0x00;
+        fb_ptr[i + 1] = 0x00;
+        fb_ptr[i + 2] = 0x00;
+        fb_ptr[i + 3] = 0xFF;
+        fb_ptr[i + 4] = 0xFF;
+        fb_ptr[i + 5] = 0xFF;
+        fb_ptr[i + 6] = 0x00;
+        fb_ptr[i + 7] = 0x00;
+        fb_ptr[i + 8] = 0x00;
+    }
 }
