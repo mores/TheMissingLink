@@ -1,23 +1,39 @@
 # apt install libbcm2835-dev
 
-# Define variables for compiler and flags
 CC = gcc
+
 CFLAGS = -Wall -g -I/usr/include/libdrm
-TARGET = pixel
-OBJECTS = main.o drm.o
+PICFLAGS = -fPIC
 
-# Default target (run when 'make' is typed with no arguments)
-all: $(TARGET)
+LIBS = -ldrm -lbcm2835
 
-# Rule to link object files into the final executable
-$(TARGET): $(OBJECTS)
-	$(CC) $(OBJECTS) -o $(TARGET) -ldrm -lbcm2835
+# Targets
+APP = pixel
+SHLIB = libfalcon_picap.so
 
-# Pattern rule: how to build any .o file from its .c source
-%.o: %.c
+# Objects
+APP_OBJS = main.o
+LIB_OBJS = drm.o
+
+# Default target
+all: $(SHLIB) $(APP)
+
+# Build the shared library
+$(SHLIB): $(LIB_OBJS)
+	$(CC) -shared -o $@ $(LIB_OBJS) $(LIBS)
+
+# Build the application, linking against the shared library
+$(APP): $(APP_OBJS)
+	$(CC) -o $@ $(APP_OBJS) -L. -lfalcon_picap -Wl,-rpath,'$$ORIGIN' $(LIBS)
+
+# Compile drm.c as PIC for shared library
+drm.o: drm.c
+	$(CC) $(CFLAGS) $(PICFLAGS) -c $< -o $@
+
+# Compile main.c normally
+main.o: main.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Phony target to clean up generated files
 .PHONY: clean
 clean:
-	rm -f $(TARGET) $(OBJECTS)
+	rm -f $(APP) $(SHLIB) *.o
