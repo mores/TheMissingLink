@@ -21,6 +21,9 @@ dtoverlay=vc4-kms-dpi-fpp-pi3,rgb888,hactive=362,hfp=0,hsync=1,hbp=0,vactive=162
 
 8. sudo systemctl stop lightdm
 
+*Optionally*
+8a. sudo systemctl disable lightdm
+
 9. sudo apt install libbcm2835-dev libdrm-dev
 
 10. cd TheMissingLink/Falcon_PiCap_V2/c/
