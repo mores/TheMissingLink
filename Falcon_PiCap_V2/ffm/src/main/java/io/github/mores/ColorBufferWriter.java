@@ -22,17 +22,19 @@ public class ColorBufferWriter {
             throw new IllegalArgumentException("Port must be 1,2,3, or 4");
         }
 
-        if (rgb888 == 0xFF000000) {
-            turnOff(buffer, port);
-        } else {
-            int r = (rgb888 >> 16) & 0xFF;
-            int g = (rgb888 >> 8) & 0xFF;
-            int b = rgb888 & 0xFF;
+        // start with a blank slate
+        int base = buffer.position();
+        turnOff(buffer, port);
+        buffer.position(base);
 
-            writeChannel(buffer, r, port);
-            writeChannel(buffer, g, port);
-            writeChannel(buffer, b, port);
-        }
+        // now turn on what is needed
+        int r = (rgb888 >> 16) & 0xFF;
+        int g = (rgb888 >> 8) & 0xFF;
+        int b = rgb888 & 0xFF;
+
+        writeChannel(buffer, r, port);
+        writeChannel(buffer, g, port);
+        writeChannel(buffer, b, port);
     }
 
     private static void turnOff(ByteBuffer buffer, int port) {
