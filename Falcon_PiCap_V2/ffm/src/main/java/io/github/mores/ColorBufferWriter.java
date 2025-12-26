@@ -22,13 +22,56 @@ public class ColorBufferWriter {
             throw new IllegalArgumentException("Port must be 1,2,3, or 4");
         }
 
-        int r = (rgb888 >> 16) & 0xFF;
-        int g = (rgb888 >> 8) & 0xFF;
-        int b = rgb888 & 0xFF;
+        if (rgb888 == 0xFF000000) {
+            turnOff(buffer, port);
+        } else {
+            int r = (rgb888 >> 16) & 0xFF;
+            int g = (rgb888 >> 8) & 0xFF;
+            int b = rgb888 & 0xFF;
 
-        writeChannel(buffer, r, port);
-        writeChannel(buffer, g, port);
-        writeChannel(buffer, b, port);
+            writeChannel(buffer, r, port);
+            writeChannel(buffer, g, port);
+            writeChannel(buffer, b, port);
+        }
+    }
+
+    private static void turnOff(ByteBuffer buffer, int port) {
+
+        for (int i = 0; i < 24; i++) {
+
+            int base = buffer.position();
+
+            buffer.position(base + 6);
+
+            byte[] readBytes = new byte[3];
+            buffer.get(readBytes);
+            java.util.BitSet bitSet = java.util.BitSet.valueOf(readBytes);
+
+            switch (port) {
+                case 1:
+                    bitSet.clear(1);
+                    break;
+
+                case 2:
+                    bitSet.clear(2);
+                    break;
+
+                case 3:
+                    bitSet.clear(9);
+                    break;
+
+                case 4:
+                    bitSet.clear(22);
+                    break;
+            }
+
+            buffer.position(base + 6);
+
+            byte[] out = new byte[3];
+            byte[] bs = bitSet.toByteArray();
+            System.arraycopy(bs, 0, out, 0, Math.min(bs.length, 3));
+            buffer.put(out);
+        }
     }
 
     private static void writeChannel(ByteBuffer buffer, int channelValue, int port) {
