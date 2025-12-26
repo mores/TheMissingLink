@@ -4,13 +4,22 @@ import java.nio.ByteBuffer;
 
 public class ColorBufferWriter {
 
+    private static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ColorBufferWriter.class);
+
     private static final int UNIT_SIZE = 9;
     private static final int UNITS_PER_CHANNEL = 8;
 
     public static void writeRgb888(ByteBuffer buffer, int rgb888, int port) {
 
+        int mask = 0X00FFFFFF;
+        log.info("writeRgb888: {} {}", port, String.format("0x%06x", rgb888 & mask));
+
         if (buffer.remaining() < 216) {
             throw new IllegalArgumentException("Buffer must have at least 216 bytes remaining");
+        }
+
+        if (port < 1 || port > 4) {
+            throw new IllegalArgumentException("Port must be 1,2,3, or 4");
         }
 
         int r = (rgb888 >> 16) & 0xFF;
