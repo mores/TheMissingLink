@@ -44,12 +44,12 @@ public class ColorBufferWriterTest {
         dumpBuffer(buffer);
         buffer.position(0);
 
-        log.info("Port 1 - GREEN");
+        log.info("Port 2 - GREEN");
         ColorBufferWriter.writeRgb888(buffer, java.awt.Color.GREEN.getRGB(), 2);
         dumpBuffer(buffer);
         buffer.position(0);
 
-        log.info("Port 1 - OFF");
+        log.info("Port 2 - OFF");
         ColorBufferWriter.writeRgb888(buffer, java.awt.Color.BLACK.getRGB(), 2);
         dumpBuffer(buffer);
         buffer.position(0);
@@ -66,12 +66,12 @@ public class ColorBufferWriterTest {
         dumpBuffer(buffer);
         buffer.position(0);
 
-        log.info("Port 1 - BLUE");
+        log.info("Port 3 - BLUE");
         ColorBufferWriter.writeRgb888(buffer, java.awt.Color.BLUE.getRGB(), 3);
         dumpBuffer(buffer);
         buffer.position(0);
 
-        log.info("Port 1 - OFF");
+        log.info("Port 3 - OFF");
         ColorBufferWriter.writeRgb888(buffer, java.awt.Color.BLACK.getRGB(), 3);
         dumpBuffer(buffer);
         buffer.position(0);
@@ -88,13 +88,55 @@ public class ColorBufferWriterTest {
         dumpBuffer(buffer);
         buffer.position(0);
 
-        log.info("Port 1 - BLUE");
+        log.info("Port 4 - WHITE");
         ColorBufferWriter.writeRgb888(buffer, java.awt.Color.WHITE.getRGB(), 4);
         dumpBuffer(buffer);
         buffer.position(0);
 
-        log.info("Port 1 - OFF");
+        log.info("Port 4 - RED");
+        ColorBufferWriter.writeRgb888(buffer, java.awt.Color.RED.getRGB(), 4);
+        dumpBuffer(buffer);
+        buffer.position(0);
+
+        log.info("Port 4 - OFF");
         ColorBufferWriter.writeRgb888(buffer, java.awt.Color.BLACK.getRGB(), 4);
+        dumpBuffer(buffer);
+        buffer.position(0);
+
+        org.junit.Assert.assertTrue(buffer.equals(allOff));
+    }
+
+    @Test
+    public void testFade() {
+
+        log.info("Off");
+        java.nio.ByteBuffer buffer = java.nio.ByteBuffer.allocate(216);
+        fillBufferWithPattern(buffer, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00);
+        dumpBuffer(buffer);
+        buffer.position(0);
+
+        log.info("Port 1 - RED");
+        ColorBufferWriter.writeRgb888(buffer, 0xff0000, 1);
+        dumpBuffer(buffer);
+        buffer.position(0);
+
+        log.info("Port 1 - LESS RED");
+        ColorBufferWriter.writeRgb888(buffer, 0xfe0000, 1);
+        dumpBuffer(buffer);
+        buffer.position(0);
+
+        log.info("Port 1 - LESS RED");
+        ColorBufferWriter.writeRgb888(buffer, 0xfd0000, 1);
+        dumpBuffer(buffer);
+        buffer.position(0);
+
+        log.info("Port 1 - LESS RED");
+        ColorBufferWriter.writeRgb888(buffer, 0xfc0000, 1);
+        dumpBuffer(buffer);
+        buffer.position(0);
+
+        log.info("Port 1 - OFF");
+        ColorBufferWriter.writeRgb888(buffer, java.awt.Color.BLACK.getRGB(), 1);
         dumpBuffer(buffer);
         buffer.position(0);
 
@@ -128,6 +170,8 @@ public class ColorBufferWriterTest {
             String binaryString = Integer.toBinaryString(aByte & 0xFF);
             bitString.append(String.format("%8s", binaryString).replace(' ', '0'));
         }
+
+        System.out.println(hexString.toString() + "\t" + bitString.toString());
 
         buffer.position(lastPosition);
     }

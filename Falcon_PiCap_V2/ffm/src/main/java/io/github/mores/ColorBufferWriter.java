@@ -78,8 +78,6 @@ public class ColorBufferWriter {
 
     private static void writeChannel(ByteBuffer buffer, int channelValue, int port) {
 
-        int activeUnits = (channelValue * UNITS_PER_CHANNEL + 127) / 255;
-
         for (int unit = 0; unit < UNITS_PER_CHANNEL; unit++) {
 
             int base = buffer.position();
@@ -105,19 +103,14 @@ public class ColorBufferWriter {
                 case 4 -> bitPos3 = 0x40;
             }
 
-            boolean active = unit >= (UNITS_PER_CHANNEL - activeUnits);
+            // Extract bit (MSB at unit 0)
+            boolean active = ((channelValue >> (7 - unit)) & 1) != 0;
 
-            // --- Byte 6 ---
-            byte existing6 = buffer.get(base + 6);
-            buffer.put(base + 6, active ? (byte) (existing6 | bitPos1) : existing6);
-
-            // --- Byte 7 ---
-            byte existing7 = buffer.get(base + 7);
-            buffer.put(base + 7, active ? (byte) (existing7 | bitPos2) : existing7);
-
-            // --- Byte 8 ---
-            byte existing8 = buffer.get(base + 8);
-            buffer.put(base + 8, active ? (byte) (existing8 | bitPos3) : existing8);
+            if (active) {
+                buffer.put(base + 6, (byte) (buffer.get(base + 6) | bitPos1));
+                buffer.put(base + 7, (byte) (buffer.get(base + 7) | bitPos2));
+                buffer.put(base + 8, (byte) (buffer.get(base + 8) | bitPos3));
+            }
 
             // Move position to end of unit
             buffer.position(base + UNIT_SIZE);
