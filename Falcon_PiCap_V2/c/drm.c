@@ -132,6 +132,8 @@ uint8_t* init() {
     uint32_t pitch  = create.pitch;
     size   = create.size;
 
+    printf("Buffer size: %ld\n", size );
+
     struct drm_mode_map_dumb map = {0};
     map.handle = handle;
 
@@ -160,17 +162,34 @@ uint8_t* init() {
     return fb_ptr;
 }
 
+int getBufferPosition( int index ) {
+    return index * 216 + (index / 5) * 6;
+}
+
 void off() {
 
-    for (uint64_t i = 0; i < size; i += 9) {
-        fb_ptr[i + 0] = 0x00;
-        fb_ptr[i + 1] = 0x00;
-        fb_ptr[i + 2] = 0x00;
-        fb_ptr[i + 3] = 0xFF;
-        fb_ptr[i + 4] = 0xFF;
-        fb_ptr[i + 5] = 0xFF;
-        fb_ptr[i + 6] = 0x00;
-        fb_ptr[i + 7] = 0x00;
-        fb_ptr[i + 8] = 0x00;
+    uint64_t i = 0;
+    for (int row = 0; row < 162; row++ ) {
+
+        i = getBufferPosition( row * 5 );
+
+        for (int index = 0; index < 120; index++ ) {
+            fb_ptr[i++] = 0x00;
+            fb_ptr[i++] = 0x00;
+            fb_ptr[i++] = 0x00;
+            fb_ptr[i++] = 0xFF;
+            fb_ptr[i++] = 0xFF;
+            fb_ptr[i++] = 0xFF;
+            fb_ptr[i++] = 0x00;
+            fb_ptr[i++] = 0x00;
+            fb_ptr[i++] = 0x00;
+        }
+
+	fb_ptr[i++] = 0x00;
+        fb_ptr[i++] = 0x00;
+        fb_ptr[i++] = 0x00;
+        fb_ptr[i++] = 0x00;
+        fb_ptr[i++] = 0x00;
+        fb_ptr[i++] = 0x00;
     }
 }

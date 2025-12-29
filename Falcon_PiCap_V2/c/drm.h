@@ -13,6 +13,8 @@ void disableDisplay();
 
 void enableDisplay();
 
+int getBufferPosition( int position );
+
 uint8_t* init();
 
 void off();
