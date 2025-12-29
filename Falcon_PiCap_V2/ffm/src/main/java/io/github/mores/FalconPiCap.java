@@ -92,9 +92,12 @@ public class FalconPiCap {
         return size;
     }
 
+    // 1086 bytes per row
+    // 5 pixels per row ( 5 * 216 ) == 1080 + 6 bytes of padding
     public void setPixel(int port, int index, int rgb888) {
 
-        int position = 216 * index;
+        int position = index * 216 + (index / 5) * 6;
+
         buffer.position(position);
         ColorBufferWriter.writeRgb888(buffer, rgb888, port);
     }
