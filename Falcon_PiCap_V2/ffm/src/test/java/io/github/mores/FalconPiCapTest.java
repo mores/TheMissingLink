@@ -5,6 +5,23 @@ import org.junit.Test;
 public class FalconPiCapTest {
     private static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(FalconPiCapTest.class);
 
+    // java.awt.Color not tuned for LEDs
+    // using these until a good reference / library can be found
+    public static final int AZURE = 0xF0FFFF;
+    public static final int BLACK = 0x000000;
+    public static final int BLUE = 0x0000FF;
+    public static final int CHARTREUSE = 0xE9FF00;
+    public static final int CYAN = 0x00CCCC;
+    public static final int GREEN = 0x00AA00;
+    public static final int MAGENTA = 0xFF00FF;
+    public static final int ORANGE = 0xFF6600;
+    public static final int PINK = 0xFF66CC;
+    public static final int RED = 0xFF0000;
+    public static final int SPRING_GREEN = 0x00FF7F;
+    public static final int VIOLET = 0x7F00FF;
+    public static final int YELLOW = 0xFFCC00;
+    public static final int WHITE = 0xFFFFFF;
+
     @Test
     public void testOne() {
         log.info("testOne");
@@ -15,37 +32,37 @@ public class FalconPiCapTest {
                 FalconPiCap piCap = new FalconPiCap(libraryArena);
 
                 for (int port = 1; port <= 4; port++) {
-                    piCap.setPixelDisplay(port, 0, java.awt.Color.RED.getRGB());
+                    piCap.setPixelDisplay(port, 0, RED);
                     Thread.sleep(500);
 
-                    piCap.setPixelDisplay(port, 1, java.awt.Color.GREEN.getRGB());
+                    piCap.setPixelDisplay(port, 1, GREEN);
                     Thread.sleep(500);
 
-                    piCap.setPixelDisplay(port, 2, java.awt.Color.BLUE.getRGB());
+                    piCap.setPixelDisplay(port, 2, BLUE);
                     Thread.sleep(500);
 
-                    piCap.setPixelDisplay(port, 3, java.awt.Color.CYAN.getRGB());
+                    piCap.setPixelDisplay(port, 3, CYAN);
                     Thread.sleep(500);
 
-                    piCap.setPixelDisplay(port, 4, java.awt.Color.MAGENTA.getRGB());
+                    piCap.setPixelDisplay(port, 4, MAGENTA);
                     Thread.sleep(500);
 
-                    piCap.setPixelDisplay(port, 5, java.awt.Color.ORANGE.getRGB());
+                    piCap.setPixelDisplay(port, 5, ORANGE);
                     Thread.sleep(500);
 
-                    piCap.setPixelDisplay(port, 6, java.awt.Color.PINK.getRGB());
+                    piCap.setPixelDisplay(port, 6, PINK);
                     Thread.sleep(500);
 
-                    piCap.setPixelDisplay(port, 7, java.awt.Color.YELLOW.getRGB());
+                    piCap.setPixelDisplay(port, 7, YELLOW);
                     Thread.sleep(500);
 
-                    piCap.setPixelDisplay(port, 8, java.awt.Color.WHITE.getRGB());
+                    piCap.setPixelDisplay(port, 8, WHITE);
                     Thread.sleep(500);
                 }
 
                 for (int port = 1; port <= 4; port++) {
                     for (int pixel = 0; pixel <= 8; pixel++) {
-                        piCap.setPixelDisplay(port, pixel, java.awt.Color.BLACK.getRGB());
+                        piCap.setPixelDisplay(port, pixel, BLACK);
                         Thread.sleep(500);
                     }
 
@@ -68,10 +85,10 @@ public class FalconPiCapTest {
             try (java.lang.foreign.Arena libraryArena = java.lang.foreign.Arena.ofConfined()) {
                 FalconPiCap piCap = new FalconPiCap(libraryArena);
 
-                piCap.setPixelDisplay(1, 0, java.awt.Color.RED.getRGB());
-                piCap.setPixelDisplay(2, 0, java.awt.Color.GREEN.getRGB());
-                piCap.setPixelDisplay(3, 0, java.awt.Color.BLUE.getRGB());
-                piCap.setPixelDisplay(4, 0, java.awt.Color.WHITE.getRGB());
+                piCap.setPixelDisplay(1, 0, RED);
+                piCap.setPixelDisplay(2, 0, GREEN);
+                piCap.setPixelDisplay(3, 0, BLUE);
+                piCap.setPixelDisplay(4, 0, WHITE);
 
                 Thread.sleep(5000);
 
@@ -87,16 +104,16 @@ public class FalconPiCapTest {
     public void testThree() {
         log.info("testThree");
 
-        java.util.List<java.awt.Color> colors = new java.util.ArrayList<>();
-        colors.add(java.awt.Color.RED);
-        colors.add(java.awt.Color.GREEN);
-        colors.add(java.awt.Color.BLUE);
-        colors.add(java.awt.Color.CYAN);
-        colors.add(java.awt.Color.MAGENTA);
-        colors.add(java.awt.Color.ORANGE);
-        colors.add(java.awt.Color.PINK);
-        colors.add(java.awt.Color.YELLOW);
-        colors.add(java.awt.Color.WHITE);
+        java.util.List<Integer> colors = new java.util.ArrayList<>();
+        colors.add(RED);
+        colors.add(GREEN);
+        colors.add(BLUE);
+        colors.add(CYAN);
+        colors.add(MAGENTA);
+        colors.add(ORANGE);
+        colors.add(PINK);
+        colors.add(YELLOW);
+        colors.add(WHITE);
 
         try {
 
@@ -106,10 +123,10 @@ public class FalconPiCapTest {
                 FalconPiCap piCap = new FalconPiCap(libraryArena);
 
                 for (int x = 0; x <= 10; x++) {
-                    piCap.setPixelDisplay(1, x, java.awt.Color.RED.getRGB());
+                    piCap.setPixelDisplay(1, x, RED);
 
-                    java.awt.Color color = colors.get(random.nextInt(colors.size()));
-                    piCap.setPixelDisplay(2, 0, color.getRGB());
+                    int color = colors.get(random.nextInt(colors.size()));
+                    piCap.setPixelDisplay(2, 0, color);
                     Thread.sleep(1000);
                 }
 
@@ -130,8 +147,7 @@ public class FalconPiCapTest {
                 FalconPiCap piCap = new FalconPiCap(libraryArena);
 
                 countdown(5);
-                java.util.List<Integer> gradient = getGradient(java.awt.Color.GREEN.getRGB(),
-                        java.awt.Color.BLUE.getRGB(), 255);
+                java.util.List<Integer> gradient = getGradient(GREEN, BLUE, 255);
 
                 long lastTime = System.nanoTime();
                 long targetFrameDuration = 50_000_000; // ~20 FPS
@@ -170,7 +186,7 @@ public class FalconPiCapTest {
 
     @Test
     public void testFive() {
-        log.info("testFour");
+        log.info("testFive");
 
         try {
 
@@ -183,6 +199,35 @@ public class FalconPiCapTest {
                     log.info("I: " + i);
                     piCap.setPixelDisplay(3, 0, wheel(i));
                     Thread.sleep(50);
+                }
+
+                piCap.destroy();
+            }
+        } catch (Throwable e) {
+            log.error("Error: ", e);
+        }
+    }
+
+    @Test
+    public void testSix() {
+        log.info("testSix");
+
+        try {
+
+            try (java.lang.foreign.Arena libraryArena = java.lang.foreign.Arena.ofConfined()) {
+                FalconPiCap piCap = new FalconPiCap(libraryArena);
+
+                countdown(5);
+
+                int begin = 0;
+                int end = begin + 49;
+
+                for (int i = begin; i <= end; i++) {
+                    log.info("I: " + i);
+                    piCap.setPixelDisplay(1, i, 0xff0000);
+
+                    // 50 turn green
+                    Thread.sleep(500);
                 }
 
                 piCap.destroy();
