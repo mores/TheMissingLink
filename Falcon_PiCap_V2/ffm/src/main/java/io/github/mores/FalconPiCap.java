@@ -94,6 +94,7 @@ public class FalconPiCap {
 
     // 1086 bytes per row
     // 5 pixels per row ( 5 * 216 ) == 1080 + 6 bytes of padding
+    // 810 max pixels per port ( buffer size 175932 / 1086 == 162 rows )
     public void setPixel(int port, int index, int rgb888) {
 
         int position = index * 216 + (index / 5) * 6;
