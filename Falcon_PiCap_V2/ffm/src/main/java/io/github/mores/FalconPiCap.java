@@ -15,7 +15,7 @@ public class FalconPiCap {
 
     private java.nio.ByteBuffer buffer;
 
-    public FalconPiCap(Arena libraryArena) throws Throwable {
+    public FalconPiCap(Arena libraryArena) {
 
         linker = Linker.nativeLinker();
 
@@ -25,7 +25,7 @@ public class FalconPiCap {
         init(libraryArena);
     }
 
-    public void destroy() throws Throwable {
+    public void destroy() {
 
         buffer = null;
         System.gc();
@@ -34,10 +34,14 @@ public class FalconPiCap {
                 .orElseThrow(() -> new RuntimeException("Destroy not found"));
         FunctionDescriptor functionDesc = FunctionDescriptor.ofVoid();
         MethodHandle methodHandle = linker.downcallHandle(destroySymbol, functionDesc);
-        methodHandle.invokeExact();
+        try {
+            methodHandle.invokeExact();
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
-    public void displayIt() throws Throwable {
+    public void displayIt() {
 
         MemorySegment displayItSymbol = customLibrary.find("displayIt")
                 .orElseThrow(() -> new RuntimeException("DisplayIt not found"));
@@ -66,30 +70,40 @@ public class FalconPiCap {
         buffer.position(lastPosition);
     }
 
-    private void init(Arena libraryArena) throws Throwable {
+    private void init(Arena libraryArena) {
 
         MemorySegment initSymbol = customLibrary.find("init")
                 .orElseThrow(() -> new RuntimeException("Cannot find init"));
         MethodHandle initHandle = linker.downcallHandle(initSymbol, FunctionDescriptor.of(ADDRESS));
-        MemorySegment segment = (MemorySegment) initHandle.invokeExact();
 
-        long size = getBufferSize();
+        try {
+            MemorySegment segment = (MemorySegment) initHandle.invokeExact();
 
-        MemorySegment sizedSegment = segment.reinterpret(size, libraryArena, null);
-        buffer = sizedSegment.asByteBuffer();
+            long size = getBufferSize();
+
+            MemorySegment sizedSegment = segment.reinterpret(size, libraryArena, null);
+            buffer = sizedSegment.asByteBuffer();
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
-    private long getBufferSize() throws Throwable {
+    private long getBufferSize() {
 
         MethodHandle bufferSizeHandle = customLibrary.find("bufferSize")
                 .map(symbol -> linker.downcallHandle(symbol, FunctionDescriptor.of(ValueLayout.JAVA_LONG) // Map
                                                                                                           // uint64_t to
                                                                                                           // Java long
-                )).orElseThrow(() -> new NoSuchMethodException("Native function bufferSize not found"));
-        long size = (long) bufferSizeHandle.invokeExact();
-        System.out.println("size of buffer: " + size);
+                )).orElseThrow(() -> new RuntimeException("Native function bufferSize not found"));
 
-        return size;
+        try {
+            long size = (long) bufferSizeHandle.invokeExact();
+            System.out.println("size of buffer: " + size);
+
+            return size;
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
     // 1086 bytes per row
@@ -103,7 +117,7 @@ public class FalconPiCap {
         ColorBufferWriter.writeRgb888(buffer, rgb888, port);
     }
 
-    public void setPixelDisplay(int port, int index, int rgb888) throws Throwable {
+    public void setPixelDisplay(int port, int index, int rgb888) {
         setPixel(port, index, rgb888);
         displayIt();
     }
