@@ -22,7 +22,7 @@ drmModeModeInfo mode;
 uint64_t size;
 
 uint64_t bufferSize() {
-	return size;
+    return size;
 }
 
 void destroy() {
@@ -34,10 +34,20 @@ void destroy() {
     usleep(30000);
     disableDisplay();
 
-    munmap(fb_ptr, size);
-    drmModeRmFB(fd, fb);
+    if (fb_ptr != NULL && fb_ptr != MAP_FAILED) {
+        munmap(fb_ptr, size);
+        fb_ptr = NULL;
+    }
+    
+    if (fb != 0) {
+        drmModeRmFB(fd, fb);
+        fb = 0;
+    }
 
-    close(fd);
+    if (fd >= 0) {
+        close(fd);
+        fd = -1;
+    }
 
     bcm2835_close();
 }
@@ -73,86 +83,126 @@ void enableDisplay() {
 }
 
 uint8_t* init() {
+    drmModeRes *res = NULL;
+    drmModeConnector *conn = NULL;
+    drmModeEncoder *enc = NULL;
+    
+    // Initialize globals
+    fb_ptr = NULL;
+    fb = 0;
+    fd = -1;
+    connector_id = 0;
+    crtc_id = 0;
 
-    if ( ! bcm2835_init()) {
-        printf("BCM2835 Library initialization failed!\n");
+    if (!bcm2835_init()) {
+        fprintf(stderr, "BCM2835 Library initialization failed!\n");
+        return NULL;
     }
 
     fd = open("/dev/dri/card0", O_RDWR | O_CLOEXEC);
     if (fd < 0) {
-        perror("open");
-        return NULL;
+        perror("open /dev/dri/card0");
+        goto cleanup_fail;
     }
 
-    drmModeRes *res = drmModeGetResources(fd);
+    res = drmModeGetResources(fd);
     if (!res) {
         perror("drmModeGetResources");
-        return NULL;
+        goto cleanup_fail;
     }
-
-    drmModeConnector *conn = NULL;
-    connector_id = 0;
 
     // Find first connected connector
     for (int i = 0; i < res->count_connectors; i++) {
         conn = drmModeGetConnector(fd, res->connectors[i]);
+        if (!conn) {
+            continue;
+        }
+        
         if (conn->connection == DRM_MODE_CONNECTED) {
             connector_id = conn->connector_id;
             break;
         }
+        
         drmModeFreeConnector(conn);
         conn = NULL;
     }
 
-    if (!conn) {
+    if (!conn || connector_id == 0) {
         fprintf(stderr, "No connected connector found.\n");
-        return NULL;
+        goto cleanup_fail;
+    }
+
+    if (conn->count_modes == 0) {
+        fprintf(stderr, "No display modes available.\n");
+        goto cleanup_fail;
     }
 
     mode = conn->modes[0];  // use preferred mode
     printf("Mode: %dx%d\n", mode.hdisplay, mode.vdisplay);
 
     // Find a CRTC
-    drmModeEncoder *enc = drmModeGetEncoder(fd, conn->encoder_id);
+    if (conn->encoder_id == 0) {
+        fprintf(stderr, "Connector has no encoder.\n");
+        goto cleanup_fail;
+    }
+    
+    enc = drmModeGetEncoder(fd, conn->encoder_id);
+    if (!enc) {
+        perror("drmModeGetEncoder");
+        goto cleanup_fail;
+    }
+    
     crtc_id = enc->crtc_id;
     drmModeFreeEncoder(enc);
+    enc = NULL;
 
     // Create dumb buffer
     struct drm_mode_create_dumb create = {0};
     create.width  = mode.hdisplay;
     create.height = mode.vdisplay;
-    create.bpp    = 24; // 4 bytes/pixel
+    create.bpp    = 24; // 3 bytes per pixel (RGB888)
 
     if (drmIoctl(fd, DRM_IOCTL_MODE_CREATE_DUMB, &create) < 0) {
-        perror("CREATE_DUMB");
-        return NULL;
+        perror("DRM_IOCTL_MODE_CREATE_DUMB");
+        goto cleanup_fail;
     }
 
     uint32_t handle = create.handle;
     uint32_t pitch  = create.pitch;
-    size   = create.size;
+    size = create.size;
 
-    printf("Buffer size: %ld\n", size );
+    printf("Buffer size: %ld\n", size);
 
     struct drm_mode_map_dumb map = {0};
     map.handle = handle;
 
     if (drmIoctl(fd, DRM_IOCTL_MODE_MAP_DUMB, &map) < 0) {
-        perror("MAP_DUMB");
-        return NULL;
+        perror("DRM_IOCTL_MODE_MAP_DUMB");
+        goto cleanup_fail;
     }
 
     fb_ptr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, map.offset);
     if (fb_ptr == MAP_FAILED) {
         perror("mmap");
-        return NULL;
+        fb_ptr = NULL;
+        goto cleanup_fail;
     }
 
     // Create framebuffer object
     if (drmModeAddFB(fd, mode.hdisplay, mode.vdisplay, 24, 24,
                      pitch, handle, &fb) != 0) {
         perror("drmModeAddFB");
-        return NULL;
+        goto cleanup_fail;
+    }
+
+    // Clean up temporary resources
+    if (conn) {
+        drmModeFreeConnector(conn);
+        conn = NULL;
+    }
+    if (res) {
+        drmModeFreeResources(res);
+        res = NULL;
     }
 
     off();
@@ -160,20 +210,45 @@ uint8_t* init() {
     enableDisplay();
 
     return fb_ptr;
+
+cleanup_fail:
+    // Clean up on failure
+    if (enc) {
+        drmModeFreeEncoder(enc);
+    }
+    if (conn) {
+        drmModeFreeConnector(conn);
+    }
+    if (res) {
+        drmModeFreeResources(res);
+    }
+    if (fb_ptr && fb_ptr != MAP_FAILED) {
+        munmap(fb_ptr, size);
+    }
+    if (fd >= 0) {
+        close(fd);
+    }
+    
+    return NULL;
 }
 
-int getBufferPosition( int index ) {
+int getBufferPosition(int index) {
     return index * 216 + (index / 5) * 6;
 }
 
 void off() {
-
     uint64_t i = 0;
-    for (int row = 0; row < 162; row++ ) {
+    
+    // Bounds check to prevent buffer overflow
+    uint64_t max_position = 162 * 5 * 216 + (162 * 5 / 5) * 6;
+    if (max_position > size) {
+        fprintf(stderr, "Warning: off() may exceed buffer size\n");
+    }
+    
+    for (int row = 0; row < 162; row++) {
+        i = getBufferPosition(row * 5);
 
-        i = getBufferPosition( row * 5 );
-
-        for (int index = 0; index < 120; index++ ) {
+        for (int index = 0; index < 120; index++) {
             fb_ptr[i++] = 0x00;
             fb_ptr[i++] = 0x00;
             fb_ptr[i++] = 0x00;
@@ -185,7 +260,7 @@ void off() {
             fb_ptr[i++] = 0x00;
         }
 
-	fb_ptr[i++] = 0x00;
+        fb_ptr[i++] = 0x00;
         fb_ptr[i++] = 0x00;
         fb_ptr[i++] = 0x00;
         fb_ptr[i++] = 0x00;
